@@ -285,6 +285,7 @@ p{ margin: 0 0 1em; color: var(--color-ink-soft); text-align: justify; }
   gap: 64px;
   align-items: center;
 }
+.asesorias-copy .eyebrow{ text-align: center; }
 .asesorias-list{ display: flex; flex-direction: column; gap: 22px; margin-top: 28px; }
 .asesorias-item h4{
   font-family: var(--font-body);
