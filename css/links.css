@@ -36,14 +36,9 @@
 }
 
 .links-avatar{
-  width: 116px;
-  height: 116px;
-  border-radius: 50%;
-  object-fit: cover;
-  padding: 4px;
-  background: conic-gradient(from 200deg, var(--color-teal-light), var(--color-yellow), var(--color-pink), var(--color-purple), var(--color-teal-light));
-  box-shadow: var(--shadow-soft);
-  margin-bottom: 20px;
+  width: 230px;
+  height: auto;
+  margin-bottom: 4px;
 }
 
 .links-logo{ height: 40px; width: auto; margin-bottom: 14px; }
@@ -115,5 +110,5 @@
 
 @media (max-width: 420px){
   .links-page{ padding: 40px 20px 32px; }
-  .links-avatar{ width: 100px; height: 100px; }
+  .links-avatar{ width: 190px; height: auto; }
 }
