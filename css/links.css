@@ -89,9 +89,9 @@
 }
 .link-btn-icon svg{ width: 100%; height: 100%; }
 
-.link-btn-teal{ background: var(--color-teal-light); color: var(--color-ink); }
 .link-btn-whatsapp{ background: #25D366; color: #fff; }
 .link-btn-purple{ background: var(--color-purple); color: var(--color-ink); }
+.link-btn-teal{ background: var(--color-teal-light); color: var(--color-ink); }
 
 .links-social{
   display: inline-flex;
