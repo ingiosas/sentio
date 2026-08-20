@@ -1,0 +1,118 @@
+/* ==========================================================================
+   SENTIO — página de enlaces (link in bio)
+   Reutiliza las variables y fuentes definidas en style.css
+   ========================================================================== */
+
+.links-body{
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.links-glow{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 15% 8%, rgba(104, 186, 178, .35) 0%, transparent 40%),
+    radial-gradient(circle at 90% 12%, rgba(246, 149, 186, .32) 0%, transparent 38%),
+    radial-gradient(circle at 12% 88%, rgba(253, 196, 100, .3) 0%, transparent 38%),
+    radial-gradient(circle at 92% 90%, rgba(191, 148, 210, .35) 0%, transparent 42%);
+  filter: blur(10px);
+}
+
+.links-page{
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  padding: 56px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.links-avatar{
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  object-fit: cover;
+  padding: 4px;
+  background: conic-gradient(from 200deg, var(--color-teal-light), var(--color-yellow), var(--color-pink), var(--color-purple), var(--color-teal-light));
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 20px;
+}
+
+.links-logo{ height: 40px; width: auto; margin-bottom: 14px; }
+
+.links-bio{
+  font-size: .98rem;
+  color: var(--color-ink-soft);
+  max-width: 32ch;
+  margin: 0 0 32px;
+  text-align: center;
+}
+
+.links-list{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.link-btn{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.link-btn:hover{ transform: translateY(-2px); }
+
+.link-btn-icon{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.link-btn-icon svg{ width: 100%; height: 100%; }
+
+.link-btn-teal{ background: var(--color-teal-light); color: var(--color-ink); }
+.link-btn-whatsapp{ background: #25D366; color: #fff; }
+.link-btn-purple{ background: var(--color-purple); color: var(--color-ink); }
+
+.links-social{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  font-size: .95rem;
+  margin-bottom: 24px;
+}
+.links-social svg{ width: 20px; height: 20px; }
+.links-social:hover{ color: var(--color-purple-dark); }
+
+.links-footer{
+  font-size: .8rem;
+  color: var(--color-ink-soft);
+  opacity: .7;
+  margin: 0;
+}
+
+@media (max-width: 420px){
+  .links-page{ padding: 40px 20px 32px; }
+  .links-avatar{ width: 100px; height: 100px; }
+}
