@@ -92,6 +92,7 @@
 .link-btn-whatsapp{ background: #25D366; color: #fff; }
 .link-btn-purple{ background: var(--color-purple); color: var(--color-ink); }
 .link-btn-teal{ background: var(--color-teal-light); color: var(--color-ink); }
+.link-btn-pink{ background: var(--color-pink); color: var(--color-ink); }
 
 .links-social{
   display: inline-flex;
