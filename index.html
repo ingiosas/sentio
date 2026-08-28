@@ -339,7 +339,7 @@
 
 <!-- ============ CONTACTO ============ -->
 <section class="section section-dark" id="contacto">
-  <div class="container contact-grid">
+  <div class="container contact-grid contact-grid--no-form">
     <div class="contact-copy">
       <p class="eyebrow">Contacto</p>
       <h2>Conversemos sobre el proceso de tu hijo o hija</h2>
@@ -367,7 +367,8 @@
       </ul>
     </div>
 
-    <form class="contact-form" id="contact-form" action="contact.php" method="POST">
+    <!-- Formulario oculto temporalmente (ver .contact-grid--no-form en style.css) -->
+    <form class="contact-form" id="contact-form" action="contact.php" method="POST" hidden>
       <div class="form-row">
         <label for="name">Nombre</label>
         <input type="text" id="name" name="name" required>
