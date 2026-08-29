@@ -229,7 +229,7 @@ function goToStep(i) {
 function renderWelcome() {
   return `
   <div class="card welcome-hero">
-    <div class="emoji">🧸</div>
+    <img src="../assets/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
     <h1>Perfil Sensorial del Bebé/Niño Pequeño 2</h1>
     <p>Cuestionario interactivo para padres, madres o cuidadores(as) de niños(as) de <strong>7 a 35 meses</strong>.
     Responda cada enunciado a su propio ritmo — su progreso se guarda automáticamente en este dispositivo — y al final

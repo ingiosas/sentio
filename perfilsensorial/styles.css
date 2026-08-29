@@ -261,7 +261,7 @@ main {
   text-align: center;
   padding: 10px 4px 4px;
 }
-.welcome-hero .emoji { font-size: 46px; }
+.welcome-hero .welcome-logo { width: 64px; height: auto; margin: 0 auto; }
 .welcome-hero h1 {
   font-family: var(--font-display);
   font-weight: 500;
