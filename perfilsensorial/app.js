@@ -207,8 +207,13 @@ function renderNavFooter(def) {
   document.getElementById("btn-prev").addEventListener("click", () => goToStep(currentStepIndex - 1));
   document.getElementById("btn-next").addEventListener("click", () => {
     if (isLast) {
-      showToast("¡Gracias! Puede revisar los resultados o imprimir el informe.");
-      goToStep(STEP_DEFS.findIndex((d) => d.type === "resultados"));
+      const resultsIndex = STEP_DEFS.findIndex((d) => d.type === "resultados");
+      goToStep(resultsIndex);
+      showToast("¡Gracias! Generando su archivo de Excel diligenciado…");
+      setTimeout(() => {
+        const downloadBtn = document.getElementById("btn-download-excel");
+        triggerExcelDownload(downloadBtn);
+      }, 300);
     } else {
       goToStep(currentStepIndex + 1);
     }
@@ -454,7 +459,10 @@ function renderResultados() {
         <h2>Resultados</h2>
         <p class="lead" style="margin-bottom:0;">Niño(a): <strong>${escapeHtml(childName)}</strong> · Edad: <strong>${ageStr}</strong></p>
       </div>
-      <button class="btn btn-secondary btn-sm no-print" id="btn-print">🖨️ Imprimir informe</button>
+      <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" id="btn-download-excel">📊 Descargar Excel diligenciado</button>
+        <button class="btn btn-secondary btn-sm" id="btn-print">🖨️ Imprimir informe</button>
+      </div>
     </div>
   </div>
 
@@ -701,6 +709,8 @@ function attachScreenHandlers(def) {
   if (def.type === "resultados") {
     const printBtn = document.getElementById("btn-print");
     if (printBtn) printBtn.addEventListener("click", () => window.print());
+    const downloadBtn = document.getElementById("btn-download-excel");
+    if (downloadBtn) downloadBtn.addEventListener("click", () => triggerExcelDownload(downloadBtn));
   }
 
   if (def.type === "interpretacion") {
@@ -726,6 +736,26 @@ function showSaveIndicator() {
   el._fadeTimer = setTimeout(() => {
     el.style.opacity = "0.55";
   }, 1200);
+}
+
+async function triggerExcelDownload(btn) {
+  const original = btn ? btn.innerHTML : null;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = "⏳ Generando...";
+  }
+  try {
+    await generateAndDownloadExcel();
+    showToast("Archivo de Excel descargado");
+  } catch (e) {
+    console.error("Error generando el Excel:", e);
+    showToast("No se pudo generar el Excel. Intente de nuevo.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  }
 }
 
 function showToast(msg) {

@@ -632,8 +632,8 @@ main {
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.btn-primary { background: var(--navy); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: #235852; }
+.btn-primary { background: #BF94D2; color: var(--text); }
+.btn-primary:hover:not(:disabled) { background: #A876BE; }
 .btn-secondary { background: #F1E9EC; color: var(--navy); }
 .btn-secondary:hover:not(:disabled) { background: #E7DBE1; }
 .btn-ghost { background: transparent; color: var(--text-soft); }
