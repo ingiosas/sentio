@@ -137,11 +137,13 @@ const LABELS_5 = [
   "Mucho Más que Otros",
 ];
 
+// Colores de marca Sentio: ámbar, morado, rosa y teal (los mismos 4 tonos
+// que ciclan en las tarjetas de servicio del sitio principal).
 const QUAD_COLORS = {
-  SK: "#ed7d31",
-  AV: "#4472c4",
-  SN: "#70ad47",
-  RG: "#c00040",
+  SK: "#D1922E",
+  AV: "#8C68A3",
+  SN: "#C9548A",
+  RG: "#3F9088",
   "-": "#9e9e9e",
 };
 

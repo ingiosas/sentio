@@ -3,30 +3,33 @@
    ========================================================================== */
 
 :root {
-  --navy: #1f3864;
-  --blue: #2e5395;
-  --blue-light: #d9e2f3;
-  --accent: #3b6fd6;
-  --bg: #f4f6fb;
+  /* Identidad de marca Sentio */
+  --navy: #2E6F69;      /* teal oscuro — antes azul marino */
+  --blue: #3F9088;      /* teal — antes azul */
+  --blue-light: #DCEEEC; /* tinte teal claro — antes azul claro */
+  --accent: #3F9088;    /* teal — color de foco/enlaces */
+  --bg: #FDFBF9;        /* crema cálido de Sentio */
   --card-bg: #ffffff;
-  --border: #e1e6ef;
-  --text: #1f2937;
-  --text-soft: #5b6472;
+  --border: #EAE2E8;    /* borde cálido de Sentio */
+  --text: #2A2730;      /* tinta de Sentio */
+  --text-soft: #6B6672;
   --success: #2e8b57;
   --warn: #b45309;
   --danger: #c0392b;
 
-  --sk: #ed7d31;
-  --av: #4472c4;
-  --sn: #70ad47;
-  --rg: #c0004a;
+  /* Cuadrantes sensoriales — mapeados a los 4 colores de marca de Sentio */
+  --sk: #D1922E;   /* Búsqueda   → ámbar (var. oscura de #FDC464) */
+  --av: #8C68A3;   /* Evitación  → morado oscuro */
+  --sn: #C9548A;   /* Sensibilidad → rosa oscuro */
+  --rg: #3F9088;   /* Registro   → teal (color primario) */
   --none: #9aa2af;
 
   --radius: 14px;
   --radius-sm: 8px;
-  --shadow: 0 2px 10px rgba(31, 56, 100, 0.08);
-  --shadow-lg: 0 8px 30px rgba(31, 56, 100, 0.14);
-  --font: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --shadow: 0 2px 10px rgba(55, 43, 69, 0.08);
+  --shadow-lg: 0 8px 30px rgba(55, 43, 69, 0.14);
+  --font: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
 }
 
 * { box-sizing: border-box; }
@@ -78,20 +81,22 @@ a { color: var(--accent); }
 .app-header .brand .logo {
   width: 34px;
   height: 34px;
+  padding: 5px;
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .app-header .brand h1 {
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 16px;
   line-height: 1.2;
   margin: 0;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -138,7 +143,7 @@ a { color: var(--accent); }
 
 .progress-track {
   height: 8px;
-  background: #eef1f7;
+  background: #F6F1F0;
   border-radius: 99px;
   overflow: hidden;
 }
@@ -170,7 +175,7 @@ a { color: var(--accent); }
 .step-chip {
   flex: 0 0 auto;
   border: 1px solid var(--border);
-  background: #fbfcfe;
+  background: #FDFBF9;
   color: var(--text-soft);
   border-radius: 99px;
   padding: 6px 12px;
@@ -225,9 +230,11 @@ main {
 }
 
 .card h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
   margin: 0 0 6px;
   color: var(--navy);
-  font-size: 21px;
+  font-size: 22px;
 }
 
 .card .lead {
@@ -256,8 +263,10 @@ main {
 }
 .welcome-hero .emoji { font-size: 46px; }
 .welcome-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
   color: var(--navy);
-  font-size: 26px;
+  font-size: 28px;
   margin: 8px 0 6px;
 }
 .welcome-hero p {
@@ -274,7 +283,7 @@ main {
   margin: 18px 0;
 }
 .info-grid .info-item {
-  background: #f7f9fd;
+  background: #F6F1F0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 14px;
@@ -292,7 +301,7 @@ main {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  background: #fafbfd;
+  background: #FAF5F3;
 }
 .scale-legend .item strong { display: block; font-size: 13.5px; color: var(--navy); }
 .scale-legend .item span { font-size: 12px; color: var(--text-soft); }
@@ -407,7 +416,7 @@ main {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: #eef1f7;
+  background: #F6F1F0;
   color: var(--navy);
   display: flex;
   align-items: center;
@@ -451,7 +460,7 @@ main {
 
 .scale-btn {
   border: 1.5px solid var(--border);
-  background: #fbfcfe;
+  background: #FDFBF9;
   border-radius: var(--radius-sm);
   padding: 9px 6px;
   text-align: center;
@@ -502,7 +511,7 @@ main {
   justify-content: space-between;
   margin-bottom: 8px;
 }
-.result-card h3 { margin: 0; font-size: 15px; color: var(--navy); }
+.result-card h3 { font-family: var(--font-display); font-weight: 500; margin: 0; font-size: 16px; color: var(--navy); }
 .result-card .score {
   font-size: 12.5px;
   color: var(--text-soft);
@@ -512,7 +521,7 @@ main {
 .level-bar-track {
   height: 10px;
   border-radius: 99px;
-  background: #eef1f7;
+  background: #F6F1F0;
   position: relative;
   margin: 10px 0 8px;
   overflow: visible;
@@ -557,7 +566,7 @@ main {
   font-weight: 700;
   padding: 5px 12px;
   border-radius: 99px;
-  background: #eef1f7;
+  background: #F6F1F0;
   color: var(--text-soft);
 }
 
@@ -569,18 +578,18 @@ main {
   margin-bottom: 16px;
   overflow-x: auto;
 }
-.chart-wrap h3 { margin: 0 0 8px 12px; color: var(--navy); font-size: 15px; }
+.chart-wrap h3 { font-family: var(--font-display); font-weight: 500; margin: 0 0 8px 12px; color: var(--navy); font-size: 16px; }
 .chart-wrap svg { display: block; margin: 0 auto; min-width: 480px; }
 
 /* ---------- Interpretation ---------- */
 .def-list { display: flex; flex-direction: column; gap: 10px; }
 .def-item {
   border-left: 5px solid var(--border);
-  background: #fafbfd;
+  background: #FAF5F3;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   padding: 10px 14px;
 }
-.def-item h4 { margin: 0 0 4px; font-size: 14.5px; color: var(--navy); }
+.def-item h4 { font-family: var(--font-display); font-weight: 500; margin: 0 0 4px; font-size: 15.5px; color: var(--navy); }
 .def-item p { margin: 0; font-size: 13.5px; color: var(--text-soft); line-height: 1.5; }
 
 .rec-list { margin: 0; padding-left: 20px; color: var(--text-soft); font-size: 14px; line-height: 1.7; }
@@ -624,9 +633,9 @@ main {
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-primary { background: var(--navy); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: #16294b; }
-.btn-secondary { background: #eef1f7; color: var(--navy); }
-.btn-secondary:hover:not(:disabled) { background: #e2e7f2; }
+.btn-primary:hover:not(:disabled) { background: #235852; }
+.btn-secondary { background: #F1E9EC; color: var(--navy); }
+.btn-secondary:hover:not(:disabled) { background: #E7DBE1; }
 .btn-ghost { background: transparent; color: var(--text-soft); }
 .btn-danger { background: #fdeceb; color: var(--danger); }
 .btn-sm { padding: 8px 14px; font-size: 13px; }
@@ -659,7 +668,7 @@ main {
   width: 100%;
   box-shadow: var(--shadow-lg);
 }
-.modal-box h3 { margin-top: 0; color: var(--navy); }
+.modal-box h3 { font-family: var(--font-display); font-weight: 500; margin-top: 0; color: var(--navy); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
 /* ---------- Toast ---------- */

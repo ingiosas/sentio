@@ -490,14 +490,14 @@ function drawResultCharts() {
     const r = getQuadrantResult(q);
     return r.answered ? r.level : null;
   });
-  renderLineChart("chart-quad", quadCats, quadVals, "#2e5395");
+  renderLineChart("chart-quad", quadCats, quadVals, "#3F9088");
 
   const secCats = SECTIONS.map((s) => shortLabel(s.title));
   const secVals = SECTIONS.map((s) => {
     const r = getSectionResult(s);
     return r.answered ? r.level : null;
   });
-  renderLineChart("chart-sec", secCats, secVals, "#70ad47");
+  renderLineChart("chart-sec", secCats, secVals, "#8C68A3");
 }
 
 function renderLineChart(containerId, categories, values, color) {
@@ -519,8 +519,8 @@ function renderLineChart(containerId, categories, values, color) {
   let gridLines = "";
   for (let lvl = 1; lvl <= 5; lvl++) {
     const y = yPix(lvl);
-    gridLines += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e5e9f2" stroke-width="1"/>`;
-    gridLines += `<text x="${padL - 8}" y="${y + 4}" font-size="11" fill="#5b6472" text-anchor="end">${lvl}</text>`;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#EAE2E8" stroke-width="1"/>`;
+    gridLines += `<text x="${padL - 8}" y="${y + 4}" font-size="11" fill="#6B6672" text-anchor="end">${lvl}</text>`;
   }
 
   const segments = [];
@@ -550,14 +550,14 @@ function renderLineChart(containerId, categories, values, color) {
     .map((catText, i) => {
       const x = xPix(i),
         y = H - padB + 16;
-      return `<text x="${x}" y="${y}" font-size="10.5" fill="#1f2937" text-anchor="end" transform="rotate(-30 ${x} ${y})">${escapeHtml(catText)}</text>`;
+      return `<text x="${x}" y="${y}" font-size="10.5" fill="#2A2730" text-anchor="end" transform="rotate(-30 ${x} ${y})">${escapeHtml(catText)}</text>`;
     })
     .join("");
 
   container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     ${gridLines}
-    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H - padB}" stroke="#c9d1e0" stroke-width="1.5"/>
-    <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#c9d1e0" stroke-width="1.5"/>
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H - padB}" stroke="#D8CDD4" stroke-width="1.5"/>
+    <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#D8CDD4" stroke-width="1.5"/>
     ${pathEls}
     ${circles}
     ${catLabels}
