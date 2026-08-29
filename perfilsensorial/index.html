@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Perfil Sensorial del Bebé/Niño Pequeño 2</title>
+<meta name="description" content="Cuestionario interactivo del Perfil Sensorial del Bebé/Niño Pequeño 2 (7 a 35 meses)." />
+<meta name="robots" content="noindex, nofollow, noarchive" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="logo">🧸</div>
+    <div>
+      <h1>Perfil Sensorial 2</h1>
+      <div class="subtitle">Bebé/Niño Pequeño · 7 a 35 meses</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="btn-export" title="Exportar respuestas (.json)">⬇️</button>
+    <button class="icon-btn" id="btn-import" title="Importar respuestas (.json)">⬆️</button>
+    <button class="icon-btn" id="btn-reset" title="Reiniciar cuestionario">🗑️</button>
+  </div>
+</header>
+
+<input type="file" id="import-file" accept="application/json" style="display:none" />
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="progress-meta" id="progress-meta"></div>
+  <div class="stepper" id="stepper"></div>
+</div>
+
+<main id="app-main"></main>
+
+<div class="nav-footer" id="nav-footer"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <h3>¿Reiniciar el cuestionario?</h3>
+    <p>Se borrarán todas las respuestas guardadas en este dispositivo. Si desea conservarlas, expórtelas primero con el botón ⬇️.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="modal-confirm">Sí, reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
