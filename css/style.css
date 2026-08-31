@@ -362,6 +362,7 @@ p{ margin: 0 0 1em; color: var(--color-ink-soft); text-align: justify; }
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
 }
 .contact-photo-img{
   width: 100%;
