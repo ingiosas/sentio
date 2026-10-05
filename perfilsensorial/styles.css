@@ -705,3 +705,97 @@ main {
 .mt-0 { margin-top: 0; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .small-note { font-size: 12px; color: var(--text-soft); }
+
+/* ---------- Enlaces con aspecto de botón ---------- */
+a.btn, a.icon-btn { text-decoration: none; }
+a.icon-btn { color: #fff; }
+
+/* ---------- Verificación del rango de edad ---------- */
+.age-ok { color: var(--success); font-weight: 700; }
+.age-warn { color: var(--danger); font-weight: 700; }
+
+/* ---------- Menú de perfiles ---------- */
+.menu-main { max-width: 960px; }
+.menu-hero { text-align: center; padding: 26px 18px 20px; }
+.menu-hero .welcome-logo { width: 64px; height: auto; margin: 0 auto; display: block; }
+.menu-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--navy);
+  font-size: 30px;
+  margin: 10px 0 6px;
+}
+.menu-hero p { color: var(--text-soft); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.profile-card {
+  --accent-card: var(--blue);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-top: 6px solid var(--accent-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.profile-card:hover, .profile-card:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.profile-card:focus-visible { outline: 3px solid var(--accent-card); outline-offset: 2px; }
+.profile-card.pc-bebe { --accent-card: #3F9088; }
+.profile-card.pc-escolar { --accent-card: #8C68A3; }
+.pc-badge {
+  align-self: flex-start;
+  background: var(--accent-card);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+.profile-card h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--navy);
+  font-size: 22px;
+  margin: 0;
+}
+.profile-card .pc-desc { color: var(--text-soft); font-size: 14.5px; line-height: 1.55; margin: 0; }
+.pc-meta { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 4px 0 0; }
+.pc-meta li {
+  background: #F6F1F0;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.pc-progress { margin-top: 4px; }
+.pc-progress .track { height: 8px; background: #F1E9EC; border-radius: 99px; overflow: hidden; }
+.pc-progress .fill { height: 100%; background: var(--accent-card); border-radius: 99px; }
+.pc-progress .txt { font-size: 12.5px; color: var(--text-soft); margin-top: 6px; }
+.pc-cta {
+  margin-top: auto;
+  align-self: flex-start;
+  background: #BF94D2;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14.5px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+}
+.profile-card:hover .pc-cta { background: #A876BE; }
+
+/* Gráficas: se adaptan al ancho disponible; con muchas categorías mantienen un ancho mínimo legible (desliza en móvil) */
+.chart-wrap svg.line-chart { max-width: 100%; height: auto; min-width: 480px; }
+.chart-wrap svg.line-chart.wide { min-width: 760px; }

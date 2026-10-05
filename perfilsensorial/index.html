@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Sentio | Perfil Sensorial 2</title>
-<meta name="description" content="Cuestionario interactivo del Perfil Sensorial del Bebé/Niño Pequeño 2 (7 a 35 meses)." />
+<title>Sentio | Perfiles Sensoriales</title>
+<meta name="description" content="Cuestionarios interactivos del Perfil Sensorial 2: bebé/niño pequeño (7 a 35 meses) y escolares (3 a 14 años)." />
 <meta name="robots" content="noindex, nofollow, noarchive" />
 <link rel="icon" type="image/png" href="../assets/logo/sentio-icon.png" />
 <link rel="apple-touch-icon" href="../assets/logo/sentio-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="styles.css?v=20261005" />
 </head>
 <body>
 
@@ -19,45 +19,83 @@
   <div class="brand">
     <img src="../assets/logo/sentio-icon.png" alt="Sentio" class="logo" />
     <div>
-      <h1>Perfil Sensorial 2</h1>
-      <div class="subtitle">Sentio · Bebé/Niño Pequeño · 7 a 35 meses</div>
+      <h1>Perfiles Sensoriales</h1>
+      <div class="subtitle">Sentio · Terapia Ocupacional</div>
     </div>
   </div>
   <div class="header-actions">
-    <button class="icon-btn" id="btn-export" title="Exportar respuestas (.json)">⬇️</button>
-    <button class="icon-btn" id="btn-import" title="Importar respuestas (.json)">⬆️</button>
-    <button class="icon-btn" id="btn-reset" title="Reiniciar cuestionario">🗑️</button>
+    <a class="icon-btn" href="../" title="Ir al sitio de Sentio" aria-label="Ir al sitio de Sentio">🏠</a>
   </div>
 </header>
 
-<input type="file" id="import-file" accept="application/json" style="display:none" />
+<main class="menu-main">
+  <section class="card menu-hero">
+    <img src="../assets/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
+    <h1>Perfiles sensoriales</h1>
+    <p>Elija el cuestionario que corresponde a la edad del niño(a). Podrá responderlo a su propio ritmo y, al finalizar,
+    el/la profesional recibirá los puntajes y la clasificación ya calculados.</p>
+  </section>
 
-<div class="progress-wrap">
-  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-  <div class="progress-meta" id="progress-meta"></div>
-  <div class="stepper" id="stepper"></div>
-</div>
+  <div class="profile-grid">
+    <a class="profile-card pc-bebe" id="card-bebe" href="bebe/">
+      <span class="pc-badge">7 a 35 meses</span>
+      <h2>Perfil Sensorial 2 · Bebé / Niño Pequeño</h2>
+      <p class="pc-desc">Cuestionario para padres, madres o cuidadores(as) de bebés y niños(as) pequeños de 7 a 35 meses
+      (Toddler Sensory Profile 2).</p>
+      <ul class="pc-meta"><li>54 enunciados</li><li>7 secciones</li><li>~10 minutos</li></ul>
+      <div class="pc-progress" hidden></div>
+      <span class="pc-cta">Comenzar →</span>
+    </a>
 
-<main id="app-main"></main>
-
-<div class="nav-footer" id="nav-footer"></div>
-
-<div class="toast" id="toast"></div>
-
-<div class="modal-overlay" id="modal-overlay" style="display:none">
-  <div class="modal-box">
-    <h3>¿Reiniciar el cuestionario?</h3>
-    <p>Se borrarán todas las respuestas guardadas en este dispositivo. Si desea conservarlas, expórtelas primero con el botón ⬇️.</p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
-      <button class="btn btn-danger" id="modal-confirm">Sí, reiniciar</button>
-    </div>
+    <a class="profile-card pc-escolar" id="card-escolar" href="escolar/">
+      <span class="pc-badge">3 a 14 años</span>
+      <h2>Perfil Sensorial 2 · Escolares</h2>
+      <p class="pc-desc">Cuestionario para padres, madres o cuidadores(as) de niños(as) y adolescentes de 3 años 0 meses
+      a 14 años 11 meses (Child Sensory Profile 2).</p>
+      <ul class="pc-meta"><li>86 enunciados</li><li>9 secciones</li><li>~15 minutos</li></ul>
+      <div class="pc-progress" hidden></div>
+      <span class="pc-cta">Comenzar →</span>
+    </a>
   </div>
-</div>
 
-<script src="vendor/exceljs.min.js"></script>
-<script src="data.js"></script>
-<script src="app.js"></script>
-<script src="xlsx-export.js"></script>
+  <section class="card">
+    <h2 style="font-size:16px;">¿Cuál elegir?</h2>
+    <p class="lead" style="margin-bottom:8px;">Use la edad del niño(a) el día de la evaluación: hasta 2 años 11 meses (35 meses) corresponde al perfil de
+    <strong>Bebé / Niño Pequeño</strong>; desde los 3 años 0 meses hasta los 14 años 11 meses, al perfil de <strong>Escolares</strong>.</p>
+    <p class="small-note" style="margin:0;">Sus respuestas se guardan únicamente en este dispositivo y navegador; no se envían a ningún servidor.
+    Cada perfil guarda su progreso por separado.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var PERFILES = [
+    { id: "bebe", key: "perfilSensorial2_v1", total: 54 },
+    { id: "escolar", key: "perfilSensorial2_escolar_v1", total: 86 }
+  ];
+  PERFILES.forEach(function (p) {
+    try {
+      var raw = localStorage.getItem(p.key);
+      if (!raw) return;
+      var st = JSON.parse(raw);
+      var answers = st.answers || {};
+      var n = Object.keys(answers).filter(function (k) { return typeof answers[k] === "number"; }).length;
+      var c = st.child || {};
+      var nombre = [c.nombre, c.apellido].filter(Boolean).join(" ");
+      if (n === 0 && !nombre) return;
+      var pct = Math.round((n / p.total) * 100);
+      var card = document.getElementById("card-" + p.id);
+      var box = card.querySelector(".pc-progress");
+      var done = n >= p.total;
+      var txt = (done ? "Completado ✓ · " : "En curso: ") + n + " de " + p.total + " respondidos (" + pct + "%)";
+      if (nombre) txt += " · " + nombre;
+      box.innerHTML = '<div class="track"><div class="fill" style="width:' + pct + '%"></div></div><div class="txt"></div>';
+      box.querySelector(".txt").textContent = txt;   // textContent: el nombre es dato del usuario
+      box.hidden = false;
+      card.querySelector(".pc-cta").textContent = "Continuar →";
+    } catch (e) { /* sin almacenamiento local: se muestra el menú sin progreso */ }
+  });
+})();
+</script>
 </body>
 </html>

@@ -1,8 +1,10 @@
 /* ==========================================================================
-   Perfil Sensorial del Bebé/Niño Pequeño 2 — lógica de la aplicación
+   Perfil Sensorial 2 — lógica de la aplicación (motor compartido por todos
+   los perfiles). Cada perfil define PROFILE, ITEMS, SECTIONS, QUADRANTS,
+   RANGES, RECOMMENDATIONS y CHILD_FIELDS en su propio data.js.
    ========================================================================== */
 
-const STORAGE_KEY = "perfilSensorial2_v1";
+const STORAGE_KEY = PROFILE.storageKey;
 
 const STEP_DEFS = [
   { key: "inicio", type: "welcome", label: "Inicio" },
@@ -18,6 +20,8 @@ const STEP_DEFS = [
 ];
 
 function shortLabel(title) {
+  const sec = SECTIONS.find((s) => s.title === title);
+  if (sec && sec.short) return sec.short;
   return title.replace("Procesamiento de ", "").replace("Procesamiento ", "").replace("Respuestas de ", "");
 }
 
@@ -234,17 +238,17 @@ function goToStep(i) {
 function renderWelcome() {
   return `
   <div class="card welcome-hero">
-    <img src="../assets/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
-    <h1>Perfil Sensorial del Bebé/Niño Pequeño 2</h1>
-    <p>Cuestionario interactivo para padres, madres o cuidadores(as) de niños(as) de <strong>7 a 35 meses</strong>.
+    <img src="${PROFILE.assetsPath}/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
+    <h1>${escapeHtml(PROFILE.title)}</h1>
+    <p>Cuestionario interactivo para padres, madres o cuidadores(as) de niños(as) de <strong>${escapeHtml(PROFILE.ageText)}</strong>.
     Responda cada enunciado a su propio ritmo — su progreso se guarda automáticamente en este dispositivo — y al final
     el/la profesional podrá revisar los puntajes y la clasificación ya calculados.</p>
 
     <div class="info-grid">
-      <div class="info-item"><div class="n">54</div><div class="l">enunciados en total</div></div>
-      <div class="info-item"><div class="n">7</div><div class="l">secciones sensoriales</div></div>
-      <div class="info-item"><div class="n">4</div><div class="l">cuadrantes de Dunn</div></div>
-      <div class="info-item"><div class="n">~10</div><div class="l">minutos aproximados</div></div>
+      <div class="info-item"><div class="n">${ITEMS.length}</div><div class="l">enunciados en total</div></div>
+      <div class="info-item"><div class="n">${SECTIONS.length}</div><div class="l">${escapeHtml(PROFILE.sectionsLabel)}</div></div>
+      <div class="info-item"><div class="n">${QUADRANTS.length}</div><div class="l">cuadrantes de Dunn</div></div>
+      <div class="info-item"><div class="n">${escapeHtml(PROFILE.minutes)}</div><div class="l">minutos aproximados</div></div>
     </div>
 
     <p style="text-align:left; font-weight:700; color:var(--navy); margin-bottom:6px;">Escala de respuesta</p>
@@ -262,6 +266,7 @@ function renderWelcome() {
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <button class="btn btn-primary" id="btn-start">Comenzar →</button>
       <button class="btn btn-secondary" id="btn-continue">Continuar donde quedé</button>
+      <a class="btn btn-ghost" href="../">← Elegir otro perfil</a>
     </div>
   </div>`;
 }
@@ -270,33 +275,23 @@ function renderWelcome() {
 /* Pantalla: Datos del niño(a)                                          */
 /* -------------------------------------------------------------------- */
 
-const CHILD_FIELDS = [
-  { key: "nombre", label: "Nombre(s) del niño(a)", type: "text" },
-  { key: "apellido", label: "Apellido", type: "text" },
-  { key: "nombrePreferido", label: "Nombre preferido (si es diferente)", type: "text" },
-  { key: "id", label: "Número de ID", type: "text" },
-  { key: "sexo", label: "Sexo", type: "pill", options: ["Masculino", "Femenino"] },
-  { key: "fechaNacimiento", label: "Fecha de nacimiento", type: "date" },
-  { key: "fechaPrueba", label: "Fecha de la prueba", type: "date" },
-  { key: "examinador", label: "Nombre del examinador(a)/proveedor(a)", type: "text" },
-  { key: "profesion", label: "Profesión del examinador(a)", type: "text" },
-  { key: "persona", label: "Persona que llenó la forma", type: "text" },
-  { key: "relacion", label: "Relación con el niño(a)", type: "text" },
-  { key: "guarderia", label: "Nombre de la guardería", type: "text" },
-  { key: "prematuro", label: "¿Nació el niño(a) prematuramente?", type: "pill", options: ["Sí", "No"] },
-  { key: "semanasAntes", label: "Si sí, ¿cuántas semanas antes?", type: "text" },
-  { key: "orden", label: "Orden de nacimiento entre hermanos(as)", type: "select",
-    options: ["Hijo único", "Primero(a)", "Segundo(a)", "Tercero(a)", "Cuarto(a)", "Quinto(a)", "Otro"] },
-  { key: "masTresNinos", label: "¿Más de 3 niños(as) de 0-18 años vivieron en el hogar en los últimos 12 meses?",
-    type: "pill", options: ["Sí", "No"], span2: true },
-];
+function ageMessageHtml() {
+  const age = calcAge(state.child.fechaNacimiento, state.child.fechaPrueba);
+  if (!age) return "Complete ambas fechas para calcular la edad automáticamente.";
+  let html = `Edad calculada: <strong>${age.years} año(s), ${age.months} mes(es), ${age.days} día(s)</strong>`;
+  const r = PROFILE.ageRange;
+  if (r) {
+    const inRange = age.years >= r.minYears && age.years <= r.maxYears;
+    html += inRange
+      ? `<br><span class="age-ok">✓ Dentro del rango del cuestionario (${escapeHtml(r.label)})</span>`
+      : `<br><span class="age-warn">⚠ Fuera del rango del cuestionario (${escapeHtml(r.label)}). Verifique las fechas o elija otro perfil.</span>`;
+  }
+  return html;
+}
 
 function renderDatos() {
   const c = state.child;
-  const age = calcAge(c.fechaNacimiento, c.fechaPrueba);
-  const ageHtml = age
-    ? `Edad calculada: <strong>${age.years} año(s), ${age.months} mes(es), ${age.days} día(s)</strong>`
-    : "Complete ambas fechas para calcular la edad automáticamente.";
+  const ageHtml = ageMessageHtml();
 
   const fieldsHtml = CHILD_FIELDS.map((f) => {
     const val = c[f.key] || "";
@@ -457,7 +452,7 @@ function renderResultados() {
     <div class="flex-between" style="flex-wrap:wrap; gap:10px;">
       <div>
         <h2>Resultados</h2>
-        <p class="lead" style="margin-bottom:0;">Niño(a): <strong>${escapeHtml(childName)}</strong> · Edad: <strong>${ageStr}</strong></p>
+        <p class="lead" style="margin-bottom:0;">${escapeHtml(PROFILE.title)}<br>Niño(a): <strong>${escapeHtml(childName)}</strong> · Edad: <strong>${ageStr}</strong></p>
       </div>
       <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" id="btn-download-excel">📊 Descargar Excel diligenciado</button>
@@ -513,7 +508,7 @@ function renderLineChart(containerId, categories, values, color) {
   if (!container) return;
   const W = Math.max(480, categories.length * 120);
   const H = 260;
-  const padL = 42,
+  const padL = 64,
     padR = 20,
     padT = 16,
     padB = 70;
@@ -562,7 +557,8 @@ function renderLineChart(containerId, categories, values, color) {
     })
     .join("");
 
-  container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+  // La clase solo se usa en pantalla (adapta el ancho); el SVG exportado a Excel no depende de ella.
+  container.innerHTML = `<svg class="line-chart${categories.length > 6 ? " wide" : ""}" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     ${gridLines}
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H - padB}" stroke="#D8CDD4" stroke-width="1.5"/>
     <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#D8CDD4" stroke-width="1.5"/>
@@ -657,13 +653,8 @@ function attachScreenHandlers(def) {
         state.child[el.dataset.field] = el.value;
         saveState(true);
         if (el.dataset.field === "fechaNacimiento" || el.dataset.field === "fechaPrueba") {
-          const age = calcAge(state.child.fechaNacimiento, state.child.fechaPrueba);
           const box = appMain.querySelector(".age-result");
-          box.innerHTML =
-            "📅 " +
-            (age
-              ? `Edad calculada: <strong>${age.years} año(s), ${age.months} mes(es), ${age.days} día(s)</strong>`
-              : "Complete ambas fechas para calcular la edad automáticamente.");
+          box.innerHTML = "📅 " + ageMessageHtml();
         }
       });
     });
@@ -767,12 +758,12 @@ function showToast(msg) {
 }
 
 function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify({ profile: PROFILE.id, ...state }, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   const name = [state.child.nombre, state.child.apellido].filter(Boolean).join("_") || "respuestas";
   a.href = url;
-  a.download = `perfil_sensorial_${name}.json`.replace(/\s+/g, "_");
+  a.download = `${PROFILE.jsonPrefix}_${name}.json`.replace(/\s+/g, "_");
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -785,6 +776,12 @@ function importData(file) {
   reader.onload = () => {
     try {
       const parsed = JSON.parse(reader.result);
+      // Los archivos exportados antes del menú no traen "profile": eran del perfil de bebé.
+      if ((parsed.profile || "bebe") !== PROFILE.id) {
+        showToast("Ese archivo corresponde a otro perfil sensorial");
+        return;
+      }
+      delete parsed.profile;
       state = Object.assign(defaultState(), parsed);
       currentStepIndex = 0;
       saveState(false);

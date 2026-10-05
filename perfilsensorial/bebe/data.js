@@ -1,18 +1,32 @@
 /* ==========================================================================
    Perfil Sensorial del Bebé/Niño Pequeño 2 (Toddler Sensory Profile 2)
-   Datos del instrumento: ítems, secciones, cuadrantes, rangos normativos.
+   Datos del perfil de 7 a 35 meses: ítems, secciones, cuadrantes y rangos.
    Basado en: Dunn, W. (2014). Toddler Sensory Profile 2. Pearson/PsychCorp.
+   (La escala de respuesta y las definiciones de cuadrantes están en
+   ../shared/common-data.js)
    ========================================================================== */
 
-// Escala de respuesta (igual que el formulario original)
-const RESPONSE_OPTIONS = [
-  { label: "Casi siempre", score: 5, sub: "90% o más del tiempo" },
-  { label: "Frecuentemente", score: 4, sub: "75% del tiempo" },
-  { label: "La mitad del tiempo", score: 3, sub: "50% del tiempo" },
-  { label: "Ocasionalmente", score: 2, sub: "25% del tiempo" },
-  { label: "Casi nunca", score: 1, sub: "10% o menos del tiempo" },
-  { label: "No aplicable", score: 0, sub: "No observado o no aplica" },
-];
+const PROFILE = {
+  id: "bebe",
+  // Misma clave que usaba la app antes del menú: conserva el progreso ya guardado.
+  storageKey: "perfilSensorial2_v1",
+  assetsPath: "../../assets",
+  title: "Perfil Sensorial del Bebé/Niño Pequeño 2",
+  ageText: "7 a 35 meses",
+  minutes: "~10",
+  sectionsLabel: "secciones sensoriales",
+  jsonPrefix: "perfil_sensorial_bebe",
+  filePrefix: "Perfil_Sensorial_Bebe",
+  xlsx: {
+    title: "PERFIL SENSORIAL DEL BEBÉ / NIÑO PEQUEÑO 2",
+    subtitle: "Toddler Sensory Profile 2 (Winnie Dunn, PhD - Pearson/PsychCorp) - Informe diligenciado a través de la aplicación web",
+    ageLabel: "Cuestionario para padres o tutores - 7 a 35 meses",
+    interpSubtitle: "Uso clínico de los cuadrantes y secciones del Perfil Sensorial del Bebé/Niño Pequeño 2.",
+    theme: { dark: "FF1F3864", mid: "FF2E5395", light: "FFD9E2F3" },
+    datosGroups: { personal: "Personal a cargo de la evaluación", contexto: "Antecedentes" },
+  },
+  ageRange: null,
+};
 
 // (id, cuadrante, texto)
 const ITEMS = [
@@ -80,38 +94,40 @@ const ITEMS = [
 
 const ITEMS_BY_ID = Object.fromEntries(ITEMS.map((it) => [it.id, it]));
 
-// Secciones: clave, título, ítems que cuentan para la puntuación cruda,
-// ítems adicionales (solo cuentan para el cuadrante), puntaje máximo.
+// Secciones: clave, encabezado del cuestionario, título, nombre corto, ítems que
+// cuentan para la puntuación cruda, ítems adicionales (solo cuentan para el
+// cuadrante), puntaje máximo y descripción.
 const SECTIONS = [
-  { key: "GENERAL", title: "Procesamiento General", main: range(1, 10), extra: [], max: 50,
+  { key: "GENERAL", header: "PROCESAMIENTO GENERAL", title: "Procesamiento General", short: "General",
+    main: range(1, 10), extra: [], max: 50,
     help: "Comportamientos generales de autorregulación, sueño, alimentación y adaptación que no son específicos de una sola modalidad sensorial." },
-  { key: "AUDITIVO", title: "Procesamiento Auditivo", main: range(11, 17), extra: [], max: 35,
+  { key: "AUDITIVO", header: "PROCESAMIENTO AUDITIVO", title: "Procesamiento Auditivo", short: "Auditivo",
+    main: range(11, 17), extra: [], max: 35,
     help: "Respuestas del niño(a) a la estimulación sonora del ambiente." },
-  { key: "VISUAL", title: "Procesamiento Visual", main: range(18, 23), extra: [24, 25], max: 30,
+  { key: "VISUAL", header: "PROCESAMIENTO VISUAL", title: "Procesamiento Visual", short: "Visual",
+    main: range(18, 23), extra: [24, 25], max: 30,
     help: "Respuestas del niño(a) a la estimulación visual (luces, movimiento, brillo)." },
-  { key: "TACTIL", title: "Procesamiento Táctil", main: range(26, 31), extra: [32, 33, 34, 35], max: 30,
+  { key: "TACTIL", header: "PROCESAMIENTO TÁCTIL", title: "Procesamiento Táctil", short: "Táctil",
+    main: range(26, 31), extra: [32, 33, 34, 35], max: 30,
     help: "Respuestas del niño(a) al tacto, texturas, temperatura y contacto físico." },
-  { key: "MOVIMIENTO", title: "Procesamiento de Movimiento", main: range(36, 40), extra: [41], max: 25,
+  { key: "MOVIMIENTO", header: "PROCESAMIENTO DE MOVIMIENTO", title: "Procesamiento de Movimiento", short: "Movimiento",
+    main: range(36, 40), extra: [41], max: 25,
     help: "Respuestas del niño(a) al movimiento propio y a la estimulación vestibular." },
-  { key: "ORAL", title: "Procesamiento Sensorial Oral", main: range(42, 48), extra: [], max: 35,
+  { key: "ORAL", header: "PROCESAMIENTO SENSORIAL ORAL", title: "Procesamiento Sensorial Oral", short: "Sensorial Oral",
+    main: range(42, 48), extra: [], max: 35,
     help: "Respuestas del niño(a) a texturas, sabores y estimulación oral relacionada con la alimentación." },
-  { key: "COMPORTAMIENTO", title: "Respuestas de Comportamiento", main: range(49, 54), extra: [], max: 30,
+  { key: "COMPORTAMIENTO", header: "RESPUESTAS DE COMPORTAMIENTO ASOCIADAS CON EL PROCESAMIENTO SENSORIAL", title: "Respuestas de Comportamiento", short: "Comportamiento",
+    main: range(49, 54), extra: [], max: 30,
     help: "Respuestas de comportamiento (autorregulación emocional) asociadas al procesamiento sensorial general." },
 ];
 
-// Cuadrantes: clave, título, ítems, puntaje máximo, definición clínica.
-const QUADRANTS = [
-  { key: "SK", title: "Búsqueda", subtitle: "Seeking", items: [18, 19, 20, 32, 36, 37, 38], max: 35,
-    def: "El grado en el que un(a) niño(a) OBTIENE estimulación sensorial. Una puntuación de “Mucho Más que Otros” indica que el niño(a) busca estimulación sensorial con mayor frecuencia que sus pares." },
-  { key: "AV", title: "Evitación", subtitle: "Avoiding", items: [3, 10, 27, 28, 29, 33, 35, 42, 49, 53, 54], max: 55,
-    def: "El grado en el que un(a) niño(a) se ve MOLESTO(A) por la estimulación sensorial. Una puntuación de “Mucho Más que Otros” indica que el niño(a) se aleja de la estimulación sensorial con mayor frecuencia que sus pares." },
-  { key: "SN", title: "Sensibilidad", subtitle: "Sensitivity", items: [1, 2, 13, 16, 26, 31, 34, 39, 41, 44, 46, 48, 52], max: 65,
-    def: "El grado en el que un(a) niño(a) DETECTA estimulación sensorial. Una puntuación de “Mucho Más que Otros” indica que el niño(a) nota la estimulación sensorial con mayor frecuencia que sus pares." },
-  { key: "RG", title: "Registro", subtitle: "Registration", items: [9, 11, 12, 14, 15, 23, 24, 25, 30, 40, 45], max: 55,
-    def: "El grado en el que a un(a) niño(a) SE LE PASA POR ALTO la estimulación sensorial. Una puntuación de “Mucho Más que Otros” indica que el niño(a) no registra la estimulación sensorial con mayor frecuencia que sus pares." },
-];
-
-const QUAD_BY_KEY = Object.fromEntries(QUADRANTS.map((q) => [q.key, q]));
+// Cuadrantes (modelo de Dunn): ítems y puntaje máximo según la grilla del protocolo.
+const QUADRANTS = buildQuadrants({
+  SK: { items: [18, 19, 20, 32, 36, 37, 38], max: 35 },
+  AV: { items: [3, 10, 27, 28, 29, 33, 35, 42, 49, 53, 54], max: 55 },
+  SN: { items: [1, 2, 13, 16, 26, 31, 34, 39, 41, 44, 46, 48, 52], max: 65 },
+  RG: { items: [9, 11, 12, 14, 15, 23, 24, 25, 30, 40, 45], max: 55 },
+});
 
 // Rangos normativos (límite inferior de cada banda) según la tabla
 // "Summary Scores" del Sensory Profile 2 User's Manual.
@@ -129,24 +145,6 @@ const RANGES = {
   COMPORTAMIENTO: { max: 30, lows: [0, 4, 7, 15, 18], disp: ["0-3", "4-6", "7-14", "15-17", "18-30"] },
 };
 
-const LABELS_5 = [
-  "Mucho Menos que Otros",
-  "Menos que Otros",
-  "Igual que la Mayoría de Otros",
-  "Más que Otros",
-  "Mucho Más que Otros",
-];
-
-// Colores de marca Sentio: ámbar, morado, rosa y teal (los mismos 4 tonos
-// que ciclan en las tarjetas de servicio del sitio principal).
-const QUAD_COLORS = {
-  SK: "#D1922E",
-  AV: "#8C68A3",
-  SN: "#C9548A",
-  RG: "#3F9088",
-  "-": "#9e9e9e",
-};
-
 const RECOMMENDATIONS = [
   "Revise primero los cuatro cuadrantes: indican el patrón general de autorregulación sensorial del niño(a) (búsqueda, evitación, sensibilidad, registro).",
   "Cruce los cuadrantes con las secciones sensoriales específicas (auditivo, visual, táctil, movimiento, oral) para identificar en qué modalidad(es) sensorial(es) se concentran las diferencias encontradas.",
@@ -155,8 +153,26 @@ const RECOMMENDATIONS = [
   "Los resultados de esta herramienta son un apoyo al razonamiento clínico; la interpretación final y las recomendaciones de intervención corresponden al criterio del profesional tratante.",
 ];
 
-function range(a, b) {
-  const out = [];
-  for (let i = a; i <= b; i++) out.push(i);
-  return out;
-}
+// Campos de la pantalla "Datos del niño(a)". `xlsxLabel` es la etiqueta usada en el Excel;
+// `group` agrupa los campos en el Excel (sin encabezado, "personal" o "contexto").
+const CHILD_FIELDS = [
+  { key: "nombre", label: "Nombre(s) del niño(a)", type: "text", xlsxLabel: "Nombre(s) del niño(a):" },
+  { key: "apellido", label: "Apellido", type: "text", xlsxLabel: "Apellido:" },
+  { key: "nombrePreferido", label: "Nombre preferido (si es diferente)", type: "text", xlsxLabel: "Nombre preferido del niño(a) (si es diferente):" },
+  { key: "id", label: "Número de ID", type: "text", xlsxLabel: "Número de ID:" },
+  { key: "sexo", label: "Sexo", type: "pill", options: ["Masculino", "Femenino"], xlsxLabel: "Sexo:" },
+  { key: "fechaNacimiento", label: "Fecha de nacimiento", type: "date", xlsxLabel: "Fecha de nacimiento:" },
+  { key: "fechaPrueba", label: "Fecha de la prueba", type: "date", xlsxLabel: "Fecha de la prueba:" },
+  { key: "examinador", label: "Nombre del examinador(a)/proveedor(a)", type: "text", group: "personal", xlsxLabel: "Nombre del examinador(a)/proveedor(a) de servicios:" },
+  { key: "profesion", label: "Profesión del examinador(a)", type: "text", group: "personal", xlsxLabel: "Profesión del examinador(a)/proveedor(a) de servicios:" },
+  { key: "persona", label: "Persona que llenó la forma", type: "text", group: "personal", xlsxLabel: "Nombre de la persona que llenó la forma:" },
+  { key: "relacion", label: "Relación con el niño(a)", type: "text", group: "personal", xlsxLabel: "Relación con el niño(a):" },
+  { key: "guarderia", label: "Nombre de la guardería", type: "text", group: "personal", xlsxLabel: "Nombre de la guardería:" },
+  { key: "prematuro", label: "¿Nació el niño(a) prematuramente?", type: "pill", options: ["Sí", "No"], group: "contexto", xlsxLabel: "¿Nació su niño(a) prematuramente?:" },
+  { key: "semanasAntes", label: "Si sí, ¿cuántas semanas antes?", type: "text", group: "contexto", xlsxLabel: "Si sí, ¿cuántas semanas antes?:" },
+  { key: "orden", label: "Orden de nacimiento entre hermanos(as)", type: "select",
+    options: ["Hijo único", "Primero(a)", "Segundo(a)", "Tercero(a)", "Cuarto(a)", "Quinto(a)", "Otro"], group: "contexto", xlsxLabel: "Orden de nacimiento entre hermanos(as):" },
+  { key: "masTresNinos", label: "¿Más de 3 niños(as) de 0-18 años vivieron en el hogar en los últimos 12 meses?",
+    type: "pill", options: ["Sí", "No"], span2: true, group: "contexto",
+    xlsxLabel: "¿Más de 3 niños(as) de 0-18 años vivieron en el hogar en los últimos 12 meses?:" },
+];

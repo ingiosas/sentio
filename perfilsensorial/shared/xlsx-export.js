@@ -1,8 +1,9 @@
 /* ==========================================================================
    Generación del archivo Excel diligenciado (.xlsx) a partir de las
    respuestas capturadas en la aplicación web. Reproduce la misma
-   estructura, fórmulas y clasificación de la plantilla original
-   "Perfil Sensorial Toddler 7-35 meses - Plantilla.xlsx".
+   estructura, fórmulas y clasificación de las plantillas originales en
+   Excel de cada perfil (bebé/niño pequeño y escolares). Lo específico de
+   cada perfil (textos, campos, colores) se lee de PROFILE y de su data.js.
    ========================================================================== */
 
 const XLSX_COLORS = {
@@ -87,6 +88,11 @@ function banner(ws, row, title, subtitle, span) {
 /* -------------------------------------------------------------------- */
 
 async function buildWorkbook() {
+  // Colores del encabezado según el perfil (azul para bebé, verde para escolares)
+  XLSX_COLORS.navy = PROFILE.xlsx.theme.dark;
+  XLSX_COLORS.blue = PROFILE.xlsx.theme.mid;
+  XLSX_COLORS.lightBlue = PROFILE.xlsx.theme.light;
+
   const wb = new ExcelJS.Workbook();
   wb.creator = "Perfil Sensorial 2 - App Web";
   wb.created = new Date();
@@ -123,8 +129,8 @@ function buildInstruccionesSheet(wb) {
   let row = banner(
     ws,
     1,
-    "PERFIL SENSORIAL DEL BEBÉ / NIÑO PEQUEÑO 2",
-    "Toddler Sensory Profile 2 (Winnie Dunn, PhD - Pearson/PsychCorp) - Informe diligenciado a través de la aplicación web",
+    PROFILE.xlsx.title,
+    PROFILE.xlsx.subtitle,
     6
   );
   row += 1;
@@ -175,8 +181,8 @@ function buildInstruccionesSheet(wb) {
 function buildDatosSheet(wb) {
   const ws = wb.addWorksheet("Datos del Niño");
   ws.views = [{ showGridLines: false }];
-  ws.columns = [{ width: 4 }, { width: 40 }, { width: 26 }, { width: 6 }, { width: 26 }, { width: 26 }, { width: 4 }];
-  let row = banner(ws, 1, "DATOS DE IDENTIFICACIÓN", "Cuestionario para padres o tutores - 7 a 35 meses", 6);
+  ws.columns = [{ width: 4 }, { width: 46 }, { width: 26 }, { width: 8 }, { width: 26 }, { width: 26 }, { width: 4 }];
+  let row = banner(ws, 1, "DATOS DE IDENTIFICACIÓN", PROFILE.xlsx.ageLabel, 6);
   row += 1;
 
   const c = state.child;
@@ -196,42 +202,35 @@ function buildDatosSheet(wb) {
     row += 1;
   };
 
-  field("Nombre(s) del niño(a):", c.nombre);
-  field("Apellido:", c.apellido);
-  field("Nombre preferido del niño(a) (si es diferente):", c.nombrePreferido);
-  field("Número de ID:", c.id);
-  field("Sexo:", c.sexo);
-  const fnac = c.fechaNacimiento ? dateOnlyUTC(c.fechaNacimiento) : "";
-  const fprueba = c.fechaPrueba ? dateOnlyUTC(c.fechaPrueba) : "";
-  field("Fecha de nacimiento:", fnac, { numFmt: "dd/mm/yyyy" });
-  const fnacRow = row - 1;
-  field("Fecha de la prueba:", fprueba, { numFmt: "dd/mm/yyyy" });
-  const fpruebaRow = row - 1;
-  row += 1;
+  const groupBar = (text) => {
+    mergeAndSet(ws, row, 2, 5, text, {
+      font: { name: "Calibri", size: 11, bold: true, color: { argb: XLSX_COLORS.white } },
+      fill: fill(XLSX_COLORS.blue),
+    });
+    for (let cc = 2; cc <= 5; cc++) ws.getCell(row, cc).fill = fill(XLSX_COLORS.blue);
+    row += 1;
+  };
 
-  mergeAndSet(ws, row, 2, 5, "Personal a cargo de la evaluación", {
-    font: { name: "Calibri", size: 11, bold: true, color: { argb: XLSX_COLORS.white } },
-    fill: fill(XLSX_COLORS.blue),
+  let fnacRow = null;
+  let fpruebaRow = null;
+  let currentGroup = null;
+  CHILD_FIELDS.forEach((f) => {
+    const group = f.group || null;
+    if (group !== currentGroup) {
+      if (group) {
+        row += 1;
+        groupBar(PROFILE.xlsx.datosGroups[group]);
+      }
+      currentGroup = group;
+    }
+    if (f.type === "date") {
+      field(f.xlsxLabel, c[f.key] ? dateOnlyUTC(c[f.key]) : "", { numFmt: "dd/mm/yyyy" });
+      if (f.key === "fechaNacimiento") fnacRow = row - 1;
+      if (f.key === "fechaPrueba") fpruebaRow = row - 1;
+    } else {
+      field(f.xlsxLabel, c[f.key], f.span2 ? { span: 1 } : undefined);
+    }
   });
-  for (let cc = 2; cc <= 5; cc++) ws.getCell(row, cc).fill = fill(XLSX_COLORS.blue);
-  row += 1;
-  field("Nombre del examinador(a)/proveedor(a) de servicios:", c.examinador);
-  field("Profesión del examinador(a)/proveedor(a) de servicios:", c.profesion);
-  field("Nombre de la persona que llenó la forma:", c.persona);
-  field("Relación con el niño(a):", c.relacion);
-  field("Nombre de la guardería:", c.guarderia);
-  row += 1;
-
-  mergeAndSet(ws, row, 2, 5, "Antecedentes", {
-    font: { name: "Calibri", size: 11, bold: true, color: { argb: XLSX_COLORS.white } },
-    fill: fill(XLSX_COLORS.blue),
-  });
-  for (let cc = 2; cc <= 5; cc++) ws.getCell(row, cc).fill = fill(XLSX_COLORS.blue);
-  row += 1;
-  field("¿Nació su niño(a) prematuramente?:", c.prematuro);
-  field("Si sí, ¿cuántas semanas antes?:", c.semanasAntes);
-  field("Orden de nacimiento entre hermanos(as):", c.orden);
-  field("¿Más de 3 niños(as) de 0-18 años vivieron en el hogar en los últimos 12 meses?:", c.masTresNinos, { span: 1 });
   row += 2;
 
   mergeAndSet(ws, row, 2, 5, "Cálculo de la edad del niño(a)", {
@@ -250,6 +249,7 @@ function buildDatosSheet(wb) {
   });
   row += 1;
   ws.getCell(row, 2).value = "Edad calculada (a partir de fechas de arriba)";
+  const ageRow = row;
   const fnacRef = `$C$${fnacRow}`;
   const fpruebaRef = `$C$${fpruebaRow}`;
   const age = calcAge(c.fechaNacimiento, c.fechaPrueba);
@@ -261,6 +261,28 @@ function buildDatosSheet(wb) {
     ws.getCell(row, cc).alignment = { horizontal: "center" };
     ws.getCell(row, cc).border = thinBorder;
     ws.getCell(row, cc).fill = fill(XLSX_COLORS.gray);
+  }
+
+  // Verificación del rango de edad del cuestionario (solo si el perfil lo define)
+  const r = PROFILE.ageRange;
+  if (r) {
+    row += 1;
+    ws.getCell(row, 2).value = "Verificación del rango de edad del cuestionario";
+    ws.mergeCells(row, 3, row, 5);
+    const inRange = age ? age.years >= r.minYears && age.years <= r.maxYears : null;
+    const okText = `Dentro del rango (${r.label})`;
+    const badText = `FUERA del rango del cuestionario (${r.label})`;
+    const cell = ws.getCell(row, 3);
+    cell.value = {
+      formula: `IF(C${ageRow}="","",IF(AND(C${ageRow}>=${r.minYears},C${ageRow}<=${r.maxYears}),"${okText}","${badText}"))`,
+      result: inRange === null ? "" : inRange ? okText : badText,
+    };
+    cell.font = { name: "Calibri", size: 10, bold: true };
+    cell.alignment = { horizontal: "center" };
+    for (let cc = 3; cc <= 5; cc++) {
+      ws.getCell(row, cc).border = thinBorder;
+      ws.getCell(row, cc).fill = fill(XLSX_COLORS.gray);
+    }
   }
 }
 
@@ -336,10 +358,7 @@ function buildCuestionarioSheet(wb) {
   };
 
   SECTIONS.forEach((section) => {
-    const headerLabel =
-      section.key === "COMPORTAMIENTO"
-        ? `RESPUESTAS DE ${section.key} ASOCIADAS AL PROCESAMIENTO SENSORIAL`
-        : `PROCESAMIENTO ${section.key === "ORAL" ? "SENSORIAL ORAL" : section.key}`;
+    const headerLabel = section.header;
     mergeAndSet(ws, row, 1, 5, headerLabel, {
       font: { name: "Calibri", size: 12, bold: true, color: { argb: XLSX_COLORS.white } },
       fill: fill(XLSX_COLORS.navy),
@@ -354,7 +373,7 @@ function buildCuestionarioSheet(wb) {
 
     const rng = section.main.map((id) => `E${itemScoreCell[id]}`).join(",");
     const rawResult = sumScores(section.main);
-    mergeAndSet(ws, row, 1, 4, `${section.key === "ORAL" ? "SENSORIAL ORAL" : section.key} Puntuación cruda (máximo ${section.max})`, {
+    mergeAndSet(ws, row, 1, 4, `${shortLabel(section.title).toUpperCase()} Puntuación cruda (máximo ${section.max})`, {
       font: { name: "Calibri", size: 10, bold: true },
       alignment: { horizontal: "right", vertical: "middle", indent: 1 },
       fill: fill(XLSX_COLORS.subtotal),
@@ -654,7 +673,7 @@ function buildInterpretacionSheet(wb) {
   const ws = wb.addWorksheet("Interpretación");
   ws.views = [{ showGridLines: false }];
   ws.columns = [{ width: 3 }, { width: 24 }, { width: 78 }, { width: 3 }];
-  let row = banner(ws, 1, "GUÍA DE INTERPRETACIÓN PARA EL PROFESIONAL", "Uso clínico de los cuadrantes y secciones del Perfil Sensorial del Bebé/Niño Pequeño 2.", 3);
+  let row = banner(ws, 1, "GUÍA DE INTERPRETACIÓN PARA EL PROFESIONAL", PROFILE.xlsx.interpSubtitle, 3);
   row += 1;
 
   mergeAndSet(ws, row, 2, 3, "El modelo de Dunn y la curva normal", { font: { name: "Calibri", size: 13, bold: true, color: { argb: "FF1F3864" } } });
@@ -804,7 +823,7 @@ async function generateAndDownloadExcel() {
   const c = state.child;
   const name = [c.nombre, c.apellido].filter(Boolean).join("_") || "nino";
   a.href = url;
-  a.download = `Perfil_Sensorial_${name}_diligenciado.xlsx`.replace(/\s+/g, "_");
+  a.download = `${PROFILE.filePrefix}_${name}_diligenciado.xlsx`.replace(/\s+/g, "_");
   document.body.appendChild(a);
   a.click();
   a.remove();
