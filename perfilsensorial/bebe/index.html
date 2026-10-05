@@ -6,12 +6,13 @@
 <title>Sentio | Perfil Sensorial 2</title>
 <meta name="description" content="Cuestionario interactivo del Perfil Sensorial del Bebé/Niño Pequeño 2 (7 a 35 meses)." />
 <meta name="robots" content="noindex, nofollow, noarchive" />
+<meta name="referrer" content="no-referrer" />
 <link rel="icon" type="image/png" href="../../assets/logo/sentio-icon.png" />
 <link rel="apple-touch-icon" href="../../assets/logo/sentio-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../styles.css?v=20261005" />
+<link rel="stylesheet" href="../styles.css?v=20261006" />
 </head>
 <body>
 
@@ -23,15 +24,7 @@
       <div class="subtitle">Sentio · Bebé/Niño Pequeño · 7 a 35 meses</div>
     </div>
   </div>
-  <div class="header-actions">
-    <a class="icon-btn" href="../" title="Volver al menú de perfiles" aria-label="Volver al menú de perfiles">🏠</a>
-    <button class="icon-btn" id="btn-export" title="Exportar respuestas (.json)">⬇️</button>
-    <button class="icon-btn" id="btn-import" title="Importar respuestas (.json)">⬆️</button>
-    <button class="icon-btn" id="btn-reset" title="Reiniciar cuestionario">🗑️</button>
-  </div>
 </header>
-
-<input type="file" id="import-file" accept="application/json" style="display:none" />
 
 <div class="progress-wrap">
   <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -56,10 +49,11 @@
   </div>
 </div>
 
-<script src="../vendor/exceljs.min.js"></script>
-<script src="../shared/common-data.js?v=20261005"></script>
-<script src="data.js?v=20261005"></script>
-<script src="../shared/app.js?v=20261005"></script>
-<script src="../shared/xlsx-export.js?v=20261005"></script>
+<script src="../vendor/supabase.min.js"></script>
+<script src="../shared/config.js?v=20261006"></script>
+<script src="../shared/api.js?v=20261006"></script>
+<script src="../shared/common-data.js?v=20261006"></script>
+<script src="data.js?v=20261006"></script>
+<script src="../shared/app.js?v=20261006"></script>
 </body>
 </html>

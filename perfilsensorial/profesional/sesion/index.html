@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Sentio | Resultados de la sesión</title>
+<meta name="robots" content="noindex, nofollow, noarchive" />
+<meta name="referrer" content="no-referrer" />
+<link rel="icon" type="image/png" href="../../../assets/logo/sentio-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../styles.css?v=20261006" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="../../../assets/logo/sentio-icon.png" alt="Sentio" class="logo" />
+    <div>
+      <h1>Resultados de la sesión</h1>
+      <div class="subtitle">Sentio · Panel profesional</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-sm btn-secondary" href="../">← Panel</a>
+  </div>
+</header>
+
+<div class="progress-wrap" style="display:none">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="progress-meta" id="progress-meta"></div>
+  <div class="stepper" id="stepper"></div>
+</div>
+
+<main id="app-main"><div class="card"><p class="lead" style="margin:0;">Cargando sesión…</p></div></main>
+
+<div class="nav-footer" id="nav-footer"></div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modal-overlay" style="display:none">
+  <div class="modal-box"><h3></h3><p></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel" type="button">Cancelar</button>
+      <button class="btn btn-danger" id="modal-confirm" type="button">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../vendor/supabase.min.js"></script>
+<script src="../../shared/config.js?v=20261006"></script>
+<script src="../../shared/api.js?v=20261006"></script>
+<script>
+(function () {
+  var main = document.getElementById("app-main");
+  function mensaje(html) { main.innerHTML = '<div class="card"><p class="lead" style="margin:0;">' + html + '</p></div>'; }
+  function cargar(src) {
+    return new Promise(function (ok, fallo) {
+      var s = document.createElement("script");
+      s.src = src + "?v=20261006"; s.onload = ok; s.onerror = function () { fallo(new Error("No se pudo cargar " + src)); };
+      document.body.appendChild(s);
+    });
+  }
+  (async function () {
+    try {
+      if (!API.configured()) return mensaje("El servicio no está configurado.");
+      var user = await API.usuario();
+      if (!user) { location.replace("../"); return; }
+      var id = new URLSearchParams(location.search).get("id");
+      var ses = id ? await API.obtenerSesionCompleta(id) : null;
+      if (!ses) return mensaje('No encontramos esta sesión. <a href="../">Volver al panel</a>');
+      if (ses.estado !== "enviada") return mensaje('Esta sesión aún no tiene respuestas enviadas. <a href="../">Volver al panel</a>');
+      window.PROFESSIONAL_VIEW = { sesion: ses };
+      // Se carga el perfil correspondiente (cada perfil define sus propios ítems y rangos)
+      await cargar("../../vendor/exceljs.min.js");
+      await cargar("../../shared/common-data.js");
+      await cargar("../../" + ses.perfil + "/data.js");
+      await cargar("../../shared/app.js");
+      await cargar("../../shared/xlsx-export.js");
+      document.title = "Sentio | " + (ses.referencia || "Sesión") + " — Resultados";
+    } catch (e) {
+      console.error(e);
+      mensaje('No se pudo cargar la sesión. Revise su conexión e <a href="">intente de nuevo</a>.');
+    }
+  })();
+})();
+</script>
+</body>
+</html>

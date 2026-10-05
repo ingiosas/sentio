@@ -4,14 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>Sentio | Perfiles Sensoriales</title>
-<meta name="description" content="Cuestionarios interactivos del Perfil Sensorial 2: bebé/niño pequeño (7 a 35 meses) y escolares (3 a 14 años)." />
+<meta name="description" content="Cuestionarios del Perfil Sensorial 2 de Sentio Terapia Ocupacional." />
 <meta name="robots" content="noindex, nofollow, noarchive" />
+<meta name="referrer" content="no-referrer" />
 <link rel="icon" type="image/png" href="../assets/logo/sentio-icon.png" />
 <link rel="apple-touch-icon" href="../assets/logo/sentio-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=20261005" />
+<link rel="stylesheet" href="styles.css?v=20261006" />
 </head>
 <body>
 
@@ -32,70 +33,26 @@
   <section class="card menu-hero">
     <img src="../assets/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
     <h1>Perfiles sensoriales</h1>
-    <p>Elija el cuestionario que corresponde a la edad del niño(a). Podrá responderlo a su propio ritmo y, al finalizar,
-    el/la profesional recibirá los puntajes y la clasificación ya calculados.</p>
+    <p>Los cuestionarios del Perfil Sensorial 2 se responden con un <strong>enlace personal</strong> que le envía su profesional
+    de Terapia Ocupacional por WhatsApp o correo. Ábralo desde ese mensaje para comenzar.</p>
   </section>
 
   <div class="profile-grid">
-    <a class="profile-card pc-bebe" id="card-bebe" href="bebe/">
-      <span class="pc-badge">7 a 35 meses</span>
-      <h2>Perfil Sensorial 2 · Bebé / Niño Pequeño</h2>
-      <p class="pc-desc">Cuestionario para padres, madres o cuidadores(as) de bebés y niños(as) pequeños de 7 a 35 meses
-      (Toddler Sensory Profile 2).</p>
-      <ul class="pc-meta"><li>54 enunciados</li><li>7 secciones</li><li>~10 minutos</li></ul>
-      <div class="pc-progress" hidden></div>
-      <span class="pc-cta">Comenzar →</span>
-    </a>
+    <section class="card">
+      <h2 style="font-size:18px;">Soy paciente o cuidador(a)</h2>
+      <p class="lead" style="margin-bottom:8px;">Use el enlace que recibió. Sus respuestas se envían de forma segura a su profesional y solo ella puede consultarlas.</p>
+      <p class="small-note" style="margin:0;">¿No tiene el enlace o dejó de funcionar? Escríbanos por
+      <a href="https://wa.me/573159408955" target="_blank" rel="noopener">WhatsApp</a> o a
+      <a href="mailto:sentio.to@gmail.com">sentio.to@gmail.com</a>.</p>
+    </section>
 
-    <a class="profile-card pc-escolar" id="card-escolar" href="escolar/">
-      <span class="pc-badge">3 a 14 años</span>
-      <h2>Perfil Sensorial 2 · Escolares</h2>
-      <p class="pc-desc">Cuestionario para padres, madres o cuidadores(as) de niños(as) y adolescentes de 3 años 0 meses
-      a 14 años 11 meses (Child Sensory Profile 2).</p>
-      <ul class="pc-meta"><li>86 enunciados</li><li>9 secciones</li><li>~15 minutos</li></ul>
-      <div class="pc-progress" hidden></div>
-      <span class="pc-cta">Comenzar →</span>
-    </a>
+    <section class="card">
+      <h2 style="font-size:18px;">Soy profesional</h2>
+      <p class="lead" style="margin-bottom:14px;">Cree enlaces de evaluación, consulte los resultados de cada sesión y descargue el informe en Excel.</p>
+      <a class="btn btn-primary" href="profesional/">Ingreso profesional →</a>
+    </section>
   </div>
-
-  <section class="card">
-    <h2 style="font-size:16px;">¿Cuál elegir?</h2>
-    <p class="lead" style="margin-bottom:8px;">Use la edad del niño(a) el día de la evaluación: hasta 2 años 11 meses (35 meses) corresponde al perfil de
-    <strong>Bebé / Niño Pequeño</strong>; desde los 3 años 0 meses hasta los 14 años 11 meses, al perfil de <strong>Escolares</strong>.</p>
-    <p class="small-note" style="margin:0;">Sus respuestas se guardan únicamente en este dispositivo y navegador; no se envían a ningún servidor.
-    Cada perfil guarda su progreso por separado.</p>
-  </section>
 </main>
 
-<script>
-(function () {
-  var PERFILES = [
-    { id: "bebe", key: "perfilSensorial2_v1", total: 54 },
-    { id: "escolar", key: "perfilSensorial2_escolar_v1", total: 86 }
-  ];
-  PERFILES.forEach(function (p) {
-    try {
-      var raw = localStorage.getItem(p.key);
-      if (!raw) return;
-      var st = JSON.parse(raw);
-      var answers = st.answers || {};
-      var n = Object.keys(answers).filter(function (k) { return typeof answers[k] === "number"; }).length;
-      var c = st.child || {};
-      var nombre = [c.nombre, c.apellido].filter(Boolean).join(" ");
-      if (n === 0 && !nombre) return;
-      var pct = Math.round((n / p.total) * 100);
-      var card = document.getElementById("card-" + p.id);
-      var box = card.querySelector(".pc-progress");
-      var done = n >= p.total;
-      var txt = (done ? "Completado ✓ · " : "En curso: ") + n + " de " + p.total + " respondidos (" + pct + "%)";
-      if (nombre) txt += " · " + nombre;
-      box.innerHTML = '<div class="track"><div class="fill" style="width:' + pct + '%"></div></div><div class="txt"></div>';
-      box.querySelector(".txt").textContent = txt;   // textContent: el nombre es dato del usuario
-      box.hidden = false;
-      card.querySelector(".pc-cta").textContent = "Continuar →";
-    } catch (e) { /* sin almacenamiento local: se muestra el menú sin progreso */ }
-  });
-})();
-</script>
 </body>
 </html>

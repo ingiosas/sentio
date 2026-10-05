@@ -4,20 +4,35 @@
    RANGES, RECOMMENDATIONS y CHILD_FIELDS en su propio data.js.
    ========================================================================== */
 
-const STORAGE_KEY = PROFILE.storageKey;
+/* Modos de uso:
+   - "cuidador":    abre el enlace de una sesión (?s=TOKEN), responde y ENVÍA. Nunca ve resultados.
+   - "profesional": la profesional abre una sesión ya enviada y ve los resultados (window.PROFESSIONAL_VIEW). */
+const APP_MODE = window.PROFESSIONAL_VIEW ? "profesional" : "cuidador";
+const SESSION_TOKEN = APP_MODE === "cuidador" ? new URLSearchParams(location.search).get("s") : null;
+let SESSION_INFO = null; // lo mínimo que devuelve el servidor sobre la sesión (perfil, referencia)
 
-const STEP_DEFS = [
-  { key: "inicio", type: "welcome", label: "Inicio" },
-  { key: "datos", type: "datos", label: "Datos del niño(a)" },
-  ...SECTIONS.map((s) => ({
-    key: s.key,
-    type: "section",
-    label: shortLabel(s.title),
-    section: s,
-  })),
-  { key: "resultados", type: "resultados", label: "Resultados" },
-  { key: "interpretacion", type: "interpretacion", label: "Guía profesional" },
-];
+// El progreso local del cuidador se guarda por enlace, para no mezclar pacientes en un mismo dispositivo.
+const STORAGE_KEY = `${PROFILE.storageKey}_s_${(SESSION_TOKEN || "sin-enlace").slice(0, 16)}`;
+
+const SECTION_STEPS = SECTIONS.map((s) => ({
+  key: s.key,
+  type: "section",
+  label: shortLabel(s.title),
+  section: s,
+}));
+
+const STEP_DEFS =
+  APP_MODE === "profesional"
+    ? [
+        { key: "resultados", type: "resultados", label: "Resultados" },
+        { key: "interpretacion", type: "interpretacion", label: "Guía y notas" },
+      ]
+    : [
+        { key: "inicio", type: "welcome", label: "Inicio" },
+        { key: "datos", type: "datos", label: "Datos del niño(a)" },
+        ...SECTION_STEPS,
+        { key: "enviar", type: "enviar", label: "Enviar" },
+      ];
 
 function shortLabel(title) {
   const sec = SECTIONS.find((s) => s.title === title);
@@ -34,23 +49,42 @@ function defaultState() {
     child: {},
     answers: {},
     comments: {},
+    consent: null,
     currentStepIndex: 0,
   };
 }
 
+function todayISO() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function loadState() {
+  // La profesional ve lo que el servidor guardó; nada de eso se escribe en el navegador.
+  if (APP_MODE === "profesional") {
+    const ses = window.PROFESSIONAL_VIEW.sesion;
+    return {
+      child: ses.datos_nino || {},
+      answers: ses.respuestas || {},
+      comments: ses.comentarios || {},
+      clinicalNotes: ses.notas_clinicas || "",
+      currentStepIndex: 0,
+    };
+  }
+  let st = defaultState();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    return Object.assign(defaultState(), parsed);
+    if (raw) st = Object.assign(defaultState(), JSON.parse(raw));
   } catch (e) {
     console.warn("No se pudo leer el almacenamiento local", e);
-    return defaultState();
   }
+  if (!st.child.fechaPrueba) st.child.fechaPrueba = todayISO(); // fecha de la prueba: hoy, editable
+  return st;
 }
 
 function saveState(showToast) {
+  if (APP_MODE === "profesional") return;
   state.currentStepIndex = currentStepIndex;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -162,6 +196,9 @@ function render() {
     case "section":
       html = renderSection(def.section);
       break;
+    case "enviar":
+      html = renderEnviar();
+      break;
     case "resultados":
       html = renderResultados();
       break;
@@ -169,6 +206,7 @@ function render() {
       html = renderInterpretacion();
       break;
   }
+  setChrome(true);
   appMain.innerHTML = `<div class="screen">${html}</div>`;
   renderStepper();
   renderProgress();
@@ -202,26 +240,26 @@ function renderProgress() {
 function renderNavFooter(def) {
   const isFirst = currentStepIndex === 0;
   const isLast = currentStepIndex === STEP_DEFS.length - 1;
+  // En "Enviar" el botón principal está dentro de la pantalla; en la vista de la profesional el último paso vuelve al panel.
+  const nextHtml =
+    def.type === "enviar"
+      ? "<span></span>"
+      : `<button class="btn btn-primary" id="btn-next" type="button" ${def.type === "welcome" && state.consent !== CONSENT.version ? "disabled" : ""}>${isLast ? "Volver al panel" : "Siguiente →"}</button>`;
+  const indicator = APP_MODE === "profesional" ? "Vista de la profesional" : "✓ Guardado automáticamente";
   navFooter.innerHTML = `
     <div class="nav-footer-inner">
       <button class="btn btn-secondary" id="btn-prev" ${isFirst ? "disabled" : ""} type="button">← Anterior</button>
-      <span class="save-indicator" id="save-indicator">✓ Guardado automáticamente</span>
-      <button class="btn btn-primary" id="btn-next" type="button">${isLast ? "Finalizar" : "Siguiente →"}</button>
+      <span class="save-indicator" id="save-indicator">${indicator}</span>
+      ${nextHtml}
     </div>`;
   document.getElementById("btn-prev").addEventListener("click", () => goToStep(currentStepIndex - 1));
-  document.getElementById("btn-next").addEventListener("click", () => {
-    if (isLast) {
-      const resultsIndex = STEP_DEFS.findIndex((d) => d.type === "resultados");
-      goToStep(resultsIndex);
-      showToast("¡Gracias! Generando su archivo de Excel diligenciado…");
-      setTimeout(() => {
-        const downloadBtn = document.getElementById("btn-download-excel");
-        triggerExcelDownload(downloadBtn);
-      }, 300);
-    } else {
-      goToStep(currentStepIndex + 1);
-    }
-  });
+  const next = document.getElementById("btn-next");
+  if (next) {
+    next.addEventListener("click", () => {
+      if (isLast) location.href = "../";
+      else goToStep(currentStepIndex + 1);
+    });
+  }
 }
 
 function goToStep(i) {
@@ -236,18 +274,21 @@ function goToStep(i) {
 /* -------------------------------------------------------------------- */
 
 function renderWelcome() {
+  const ref = SESSION_INFO && SESSION_INFO.referencia;
+  const consentOk = state.consent === CONSENT.version;
+  const answered = totalAnsweredCount();
   return `
   <div class="card welcome-hero">
     <img src="${PROFILE.assetsPath}/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
     <h1>${escapeHtml(PROFILE.title)}</h1>
-    <p>Cuestionario interactivo para padres, madres o cuidadores(as) de niños(as) de <strong>${escapeHtml(PROFILE.ageText)}</strong>.
-    Responda cada enunciado a su propio ritmo — su progreso se guarda automáticamente en este dispositivo — y al final
-    el/la profesional podrá revisar los puntajes y la clasificación ya calculados.</p>
+    ${ref ? `<p style="margin-bottom:6px;">Cuestionario para: <strong>${escapeHtml(ref)}</strong></p>` : ""}
+    <p>Cuestionario para padres, madres o cuidadores(as) de niños(as) de <strong>${escapeHtml(PROFILE.ageText)}</strong>.
+    Responda cada enunciado a su propio ritmo: su avance se guarda en este dispositivo. Al terminar, sus respuestas se envían
+    de forma segura a su profesional de Terapia Ocupacional, quien las revisará.</p>
 
     <div class="info-grid">
       <div class="info-item"><div class="n">${ITEMS.length}</div><div class="l">enunciados en total</div></div>
       <div class="info-item"><div class="n">${SECTIONS.length}</div><div class="l">${escapeHtml(PROFILE.sectionsLabel)}</div></div>
-      <div class="info-item"><div class="n">${QUADRANTS.length}</div><div class="l">cuadrantes de Dunn</div></div>
       <div class="info-item"><div class="n">${escapeHtml(PROFILE.minutes)}</div><div class="l">minutos aproximados</div></div>
     </div>
 
@@ -261,14 +302,168 @@ function renderWelcome() {
   </div>
 
   <div class="card">
-    <h2 style="font-size:16px;">¿Ya tiene respuestas guardadas?</h2>
-    <p class="lead">Puede continuar donde quedó, exportar sus respuestas como archivo, o empezar de nuevo. Use los íconos de la barra superior en cualquier momento.</p>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn btn-primary" id="btn-start">Comenzar →</button>
-      <button class="btn btn-secondary" id="btn-continue">Continuar donde quedé</button>
-      <a class="btn btn-ghost" href="../">← Elegir otro perfil</a>
+    <h2 style="font-size:17px;">${escapeHtml(CONSENT.title)}</h2>
+    ${CONSENT.paragraphs.map((p) => `<p class="lead" style="margin-bottom:10px;">${p}</p>`).join("")}
+    <label class="consent-check">
+      <input type="checkbox" id="consent-check" ${consentOk ? "checked" : ""} />
+      <span>${escapeHtml(CONSENT.checkbox)}</span>
+    </label>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+      <button class="btn btn-primary" id="btn-start" ${consentOk ? "" : "disabled"}>${answered > 0 ? "Revisar desde el inicio" : "Comenzar →"}</button>
+      ${answered > 0 ? `<button class="btn btn-secondary" id="btn-continue" ${consentOk ? "" : "disabled"}>Continuar donde quedé</button>` : ""}
     </div>
   </div>`;
+}
+
+/* -------------------------------------------------------------------- */
+/* Pantalla: mensajes de acceso (enlace, envío) — el cuidador nunca ve resultados */
+/* -------------------------------------------------------------------- */
+
+function setChrome(visible) {
+  const pw = document.querySelector(".progress-wrap");
+  if (pw) pw.style.display = visible ? "" : "none";
+  navFooter.style.display = visible ? "" : "none";
+}
+
+const CONTACTO_MEDIOS = `por WhatsApp al <a href="https://wa.me/573159408955" target="_blank" rel="noopener">+57 315 940 8955</a> o a <a href="mailto:sentio.to@gmail.com">sentio.to@gmail.com</a>`;
+
+function renderGate(kind) {
+  const base = {
+    cargando: { icon: "⏳", title: "Cargando su cuestionario…", text: "Un momento, por favor." },
+    "sin-enlace": { icon: "🔗", title: "Necesita su enlace personal", text: `Este cuestionario se responde con el enlace que le envió su profesional de Terapia Ocupacional (por WhatsApp o correo). Ábralo desde ese mensaje. Si no lo tiene, escríbanos ${CONTACTO_MEDIOS}.` },
+    "enlace-invalido": { icon: "❓", title: "No reconocemos este enlace", text: `Revise que lo haya copiado completo o pida uno nuevo a su profesional o escríbanos ${CONTACTO_MEDIOS}.` },
+    vencida: { icon: "⌛", title: "Este enlace ya venció", text: `Pida a su profesional que le genere uno nuevo o escríbanos ${CONTACTO_MEDIOS}.` },
+    "ya-enviada": { icon: "✅", title: "Sus respuestas ya fueron enviadas", text: "Gracias. Su profesional ya las recibió y se comunicará con usted. No es necesario hacer nada más." },
+    "enviada-ok": { icon: "💚", title: "¡Gracias! Sus respuestas fueron enviadas", text: "Su profesional de Terapia Ocupacional las recibió y las revisará. Puede cerrar esta ventana." },
+    "sin-servicio": { icon: "🛠️", title: "El servicio no está disponible por ahora", text: `Estamos configurando el envío de respuestas. Intente de nuevo más tarde o escríbanos ${CONTACTO_MEDIOS}.` },
+    "error-red": { icon: "📶", title: "No pudimos conectarnos", text: "Revise su conexión a internet e intente de nuevo.", retry: true },
+  }[kind];
+  setChrome(false);
+  appMain.innerHTML = `
+  <div class="screen"><div class="card welcome-hero gate">
+    <img src="${PROFILE.assetsPath}/logo/sentio-icon.png" alt="Sentio" class="welcome-logo" />
+    <div class="gate-icon">${base.icon}</div>
+    <h1 style="font-size:24px;">${base.title}</h1>
+    <p>${base.text}</p>
+    ${base.retry ? '<button class="btn btn-primary" id="btn-retry">Reintentar</button>' : ""}
+  </div></div>`;
+  const retry = document.getElementById("btn-retry");
+  if (retry) retry.addEventListener("click", bootstrap);
+  window.scrollTo(0, 0);
+}
+
+/* -------------------------------------------------------------------- */
+/* Pantalla: revisión final y envío (cuidador)                          */
+/* -------------------------------------------------------------------- */
+
+function pendientes() {
+  const secciones = [];
+  SECTIONS.forEach((sec) => {
+    const ids = [...sec.main, ...sec.extra];
+    const faltan = ids.length - countAnswered(ids);
+    if (faltan > 0) secciones.push({ label: shortLabel(sec.title), faltan, step: STEP_DEFS.findIndex((d) => d.key === sec.key) });
+  });
+  const datos = [];
+  if (!(state.child.nombre || "").trim()) datos.push("Nombre del niño(a)");
+  if (!state.child.fechaNacimiento) datos.push("Fecha de nacimiento");
+  const consentimiento = state.consent === CONSENT.version;
+  return { secciones, datos, consentimiento, completo: !secciones.length && !datos.length && consentimiento };
+}
+
+function renderEnviar() {
+  const p = pendientes();
+  const answered = totalAnsweredCount();
+  const age = calcAge(state.child.fechaNacimiento, state.child.fechaPrueba);
+  const r = PROFILE.ageRange;
+  const fueraDeRango = age && r && (age.years < r.minYears || age.years > r.maxYears);
+
+  const lista = [];
+  p.secciones.forEach((x) => lista.push(`<li><span><strong>${escapeHtml(x.label)}</strong>: faltan ${x.faltan} por responder</span> <button class="btn btn-secondary btn-sm" data-goto="${x.step}" type="button">Ir a la sección</button></li>`));
+  if (p.datos.length) lista.push(`<li><span><strong>Datos del niño(a)</strong>: falta ${p.datos.map(escapeHtml).join(" y ")}</span> <button class="btn btn-secondary btn-sm" data-goto="1" type="button">Completar</button></li>`);
+  if (!p.consentimiento) lista.push(`<li><span><strong>Autorización de datos</strong>: debe aceptarla al inicio</span> <button class="btn btn-secondary btn-sm" data-goto="0" type="button">Ir al inicio</button></li>`);
+
+  return `
+  <div class="card">
+    <h2>Revisión final</h2>
+    <p class="lead">Ha respondido <strong>${answered} de ${ITEMS.length}</strong> enunciados${state.child.nombre ? ` para <strong>${escapeHtml(state.child.nombre)}</strong>` : ""}.</p>
+    ${fueraDeRango ? `<div class="age-result" style="margin-bottom:12px;"><span class="age-warn">⚠ Según las fechas, la edad del niño(a) está fuera del rango de este cuestionario (${escapeHtml(r.label)}). Verifique las fechas; si son correctas, igual puede enviarlas y su profesional lo revisará.</span></div>` : ""}
+    ${p.completo
+      ? `<div class="send-ready">✅ Todo está completo. Al enviar, sus respuestas llegan de inmediato a su profesional y <strong>ya no podrá modificarlas</strong>.</div>
+         <button class="btn btn-primary" id="btn-send" type="button" style="margin-top:14px;">Enviar respuestas</button>`
+      : `<p class="lead" style="margin-bottom:8px;">Para poder enviar, falta completar:</p>
+         <ul class="pending-list">${lista.join("")}</ul>
+         <button class="btn btn-primary" id="btn-send" type="button" disabled style="margin-top:14px;">Enviar respuestas</button>`}
+    <p class="small-note" style="margin-top:12px;">Sus respuestas solo las puede consultar la profesional que realiza la evaluación.</p>
+  </div>`;
+}
+
+function mostrarModal({ title, text, confirmLabel, onConfirm }) {
+  const overlay = document.getElementById("modal-overlay");
+  overlay.querySelector("h3").textContent = title;
+  overlay.querySelector("p").textContent = text;
+  const ok = document.getElementById("modal-confirm");
+  const cancel = document.getElementById("modal-cancel");
+  ok.textContent = confirmLabel;
+  ok.className = "btn btn-primary";
+  const cerrar = () => (overlay.style.display = "none");
+  ok.onclick = () => { cerrar(); onConfirm(); };
+  cancel.onclick = cerrar;
+  overlay.style.display = "flex";
+}
+
+async function enviarAlServidor() {
+  const btn = document.getElementById("btn-send");
+  if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+  try {
+    await API.enviarRespuestas(SESSION_TOKEN, state.child, state.answers, state.comments, CONSENT.version);
+    localStorage.removeItem(STORAGE_KEY);
+    renderGate("enviada-ok");
+  } catch (e) {
+    if (e.code === "sesion_ya_enviada") return renderGate("ya-enviada");
+    if (e.code === "sesion_vencida") return renderGate("vencida");
+    console.error("Error al enviar:", e);
+    showToast("No se pudo enviar. Revise su conexión e intente de nuevo; sus respuestas siguen guardadas en este dispositivo.");
+    if (btn) { btn.disabled = false; btn.textContent = "Enviar respuestas"; }
+  }
+}
+
+/* -------------------------------------------------------------------- */
+/* Vista de la profesional: datos de la evaluación y comentarios         */
+/* -------------------------------------------------------------------- */
+
+function fmtFecha(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" });
+}
+
+function fmtFechaSimple(ymd) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd || "");
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : ymd;
+}
+
+function renderDatosEvaluacion() {
+  if (APP_MODE !== "profesional") return "";
+  const ses = window.PROFESSIONAL_VIEW.sesion;
+  const c = state.child;
+  const kv = (k, v) => `<div class="kv"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`;
+  const meta = [
+    kv("Referencia de la sesión", ses.referencia || "—"),
+    kv("Respuestas enviadas", fmtFecha(ses.enviada_en)),
+    kv("Autorización de datos", ses.consentimiento_en ? `Aceptada el ${fmtFecha(ses.consentimiento_en)} (texto ${ses.consentimiento_version})` : "—"),
+  ].join("");
+  const datos = CHILD_FIELDS.filter((f) => !f.profesional && c[f.key])
+    .map((f) => kv(f.label, f.type === "date" ? fmtFechaSimple(c[f.key]) : c[f.key]))
+    .join("");
+  const comentarios = SECTIONS.filter((x) => (state.comments[x.key] || "").trim())
+    .map((x) => kv(shortLabel(x.title), state.comments[x.key]))
+    .join("");
+  return `
+  <div class="card">
+    <h2 style="font-size:17px;">Datos de la evaluación</h2>
+    <div class="kv-grid">${meta}${datos}</div>
+  </div>
+  ${comentarios ? `<div class="card"><h2 style="font-size:17px;">Comentarios del cuidador(a)</h2><div class="kv-grid kv-one">${comentarios}</div></div>` : ""}`;
 }
 
 /* -------------------------------------------------------------------- */
@@ -293,7 +488,7 @@ function renderDatos() {
   const c = state.child;
   const ageHtml = ageMessageHtml();
 
-  const fieldsHtml = CHILD_FIELDS.map((f) => {
+  const fieldsHtml = CHILD_FIELDS.filter((f) => !f.profesional).map((f) => {
     const val = c[f.key] || "";
     const spanCls = f.span2 ? " span-2" : "";
     if (f.type === "pill") {
@@ -461,6 +656,8 @@ function renderResultados() {
     </div>
   </div>
 
+  ${renderDatosEvaluacion()}
+
   <div class="card">
     <h2 style="font-size:17px;">Cuadrantes sensoriales</h2>
     <div class="result-grid">${quadCards}</div>
@@ -620,6 +817,7 @@ function renderInterpretacion() {
     <div class="field">
       <textarea id="clinical-notes" rows="5" placeholder="Espacio de uso libre del profesional...">${escapeHtml(state.clinicalNotes || "")}</textarea>
     </div>
+    <div class="small-note" id="notes-status" style="margin-top:6px;">Las notas se guardan automáticamente en esta sesión.</div>
   </div>`;
 }
 
@@ -629,12 +827,19 @@ function renderInterpretacion() {
 
 function attachScreenHandlers(def) {
   if (def.type === "welcome") {
-    document.getElementById("btn-start").addEventListener("click", () => goToStep(1));
-    document.getElementById("btn-continue").addEventListener("click", () => {
-      const answered = totalAnsweredCount();
-      let target = 1;
-      if (answered > 0) {
-        for (let i = 2; i < STEP_DEFS.length - 2; i++) {
+    const check = document.getElementById("consent-check");
+    const start = document.getElementById("btn-start");
+    const cont = document.getElementById("btn-continue");
+    check.addEventListener("change", () => {
+      state.consent = check.checked ? CONSENT.version : null;
+      saveState(false);
+      [start, cont, document.getElementById("btn-next")].forEach((b) => b && (b.disabled = !check.checked));
+    });
+    start.addEventListener("click", () => goToStep(1));
+    if (cont) {
+      cont.addEventListener("click", () => {
+        let target = 1;
+        for (let i = 2; i < STEP_DEFS.length - 1; i++) {
           const sec = STEP_DEFS[i].section;
           if (countAnswered([...sec.main, ...sec.extra]) < sec.main.length + sec.extra.length) {
             target = i;
@@ -642,9 +847,24 @@ function attachScreenHandlers(def) {
           }
           target = i + 1;
         }
-      }
-      goToStep(target);
-    });
+        goToStep(target);
+      });
+    }
+  }
+
+  if (def.type === "enviar") {
+    appMain.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => goToStep(parseInt(b.dataset.goto, 10))));
+    const send = document.getElementById("btn-send");
+    if (send && !send.disabled) {
+      send.addEventListener("click", () =>
+        mostrarModal({
+          title: "¿Enviar sus respuestas?",
+          text: "Una vez enviadas no podrá modificarlas. Su profesional las recibirá de inmediato.",
+          confirmLabel: "Sí, enviar",
+          onConfirm: enviarAlServidor,
+        })
+      );
+    }
   }
 
   if (def.type === "datos") {
@@ -706,10 +926,22 @@ function attachScreenHandlers(def) {
 
   if (def.type === "interpretacion") {
     const notes = document.getElementById("clinical-notes");
+    const status = document.getElementById("notes-status");
     if (notes) {
+      let timer = null;
       notes.addEventListener("input", () => {
         state.clinicalNotes = notes.value;
-        saveState(true);
+        status.textContent = "Guardando…";
+        clearTimeout(timer);
+        timer = setTimeout(async () => {
+          try {
+            await API.guardarNotas(window.PROFESSIONAL_VIEW.sesion.id, state.clinicalNotes);
+            status.textContent = "✓ Notas guardadas";
+          } catch (e) {
+            console.error(e);
+            status.textContent = "⚠ No se pudieron guardar las notas. Revise su conexión y siga escribiendo para reintentar.";
+          }
+        }, 800);
       });
     }
   }
@@ -757,66 +989,31 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
 }
 
-function exportData() {
-  const blob = new Blob([JSON.stringify({ profile: PROFILE.id, ...state }, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const name = [state.child.nombre, state.child.apellido].filter(Boolean).join("_") || "respuestas";
-  a.href = url;
-  a.download = `${PROFILE.jsonPrefix}_${name}.json`.replace(/\s+/g, "_");
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  showToast("Archivo descargado");
-}
+/* -------------------------------------------------------------------- */
+/* Arranque                                                             */
+/* -------------------------------------------------------------------- */
 
-function importData(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(reader.result);
-      // Los archivos exportados antes del menú no traen "profile": eran del perfil de bebé.
-      if ((parsed.profile || "bebe") !== PROFILE.id) {
-        showToast("Ese archivo corresponde a otro perfil sensorial");
-        return;
-      }
-      delete parsed.profile;
-      state = Object.assign(defaultState(), parsed);
-      currentStepIndex = 0;
-      saveState(false);
-      render();
-      showToast("Respuestas importadas correctamente");
-    } catch (e) {
-      showToast("El archivo no es válido");
+async function bootstrap() {
+  if (APP_MODE === "profesional") return render();
+  if (!SESSION_TOKEN) return renderGate("sin-enlace");
+  if (!API.configured()) return renderGate("sin-servicio");
+  renderGate("cargando");
+  try {
+    const ses = await API.obtenerSesion(SESSION_TOKEN);
+    if (!ses) return renderGate("enlace-invalido");
+    if (ses.perfil !== PROFILE.id) {
+      // El enlace es de otro perfil: llevarlo al cuestionario correcto conservando el token.
+      location.replace(`../${ses.perfil}/${location.search}`);
+      return;
     }
-  };
-  reader.readAsText(file);
+    if (ses.estado === "enviada") return renderGate("ya-enviada");
+    if (!ses.vigente) return renderGate("vencida");
+    SESSION_INFO = ses;
+    render();
+  } catch (e) {
+    console.error(e);
+    renderGate("error-red");
+  }
 }
 
-function confirmReset() {
-  document.getElementById("modal-overlay").style.display = "flex";
-}
-
-function doReset() {
-  state = defaultState();
-  currentStepIndex = 0;
-  localStorage.removeItem(STORAGE_KEY);
-  document.getElementById("modal-overlay").style.display = "none";
-  render();
-  showToast("Se reinició el cuestionario");
-}
-
-document.getElementById("btn-export").addEventListener("click", exportData);
-document.getElementById("btn-import").addEventListener("click", () => document.getElementById("import-file").click());
-document.getElementById("import-file").addEventListener("change", (e) => {
-  if (e.target.files[0]) importData(e.target.files[0]);
-  e.target.value = "";
-});
-document.getElementById("btn-reset").addEventListener("click", confirmReset);
-document.getElementById("modal-cancel").addEventListener("click", () => {
-  document.getElementById("modal-overlay").style.display = "none";
-});
-document.getElementById("modal-confirm").addEventListener("click", doReset);
-
-render();
+bootstrap();
