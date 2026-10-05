@@ -8,8 +8,8 @@
    ========================================================================== */
 
 const SENTIO_CONFIG = {
-  supabaseUrl: "",       // Ej.: "https://abcdefgh.supabase.co"  (Project Settings → API → Project URL)
-  supabaseAnonKey: "",   // Clave pública "anon" / "publishable" (Project Settings → API)
+  supabaseUrl: "https://qnpotvldkhlbycballbm.supabase.co",       // Project URL del proyecto "Sentio" en Supabase
+  supabaseAnonKey: "sb_publishable_D7ems7cHnitovFDEbSdOcg_p4DfbM5d",   // Clave pública (publishable): segura para el navegador; la protección está en las reglas de la base de datos
 };
 
 /* --------------------------------------------------------------------------
